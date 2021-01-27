@@ -8,27 +8,32 @@ import com.inclined.hibernate.table.relations.Instructor;
 import com.inclined.hibernate.table.relations.InstructorDetail;
 
 public class HibernateRelationBiDirectional {
-	
-	static SessionFactory factory = new Configuration()
-			.configure("hibernate.cfg.xml")
-			.addAnnotatedClass(Instructor.class)
-			.addAnnotatedClass(InstructorDetail.class)
-			.buildSessionFactory();
 
-	static Session session = factory.getCurrentSession();
 	
 	public static void main(String[] args) {
 			
 		// Session Start
-		session.beginTransaction();
-		
-		InstructorDetail instructorDetail = session.get(InstructorDetail.class, 3);
-		
-		if(instructorDetail !=null) 
+		// Session, SessionFactory implements AutoClosable()
+		// try with resources
+		try(SessionFactory factory = new Configuration()
+				.configure("hibernate.cfg.xml")
+				.addAnnotatedClass(Instructor.class)
+				.addAnnotatedClass(InstructorDetail.class)
+				.buildSessionFactory();
+				Session session = factory.getCurrentSession();)
+		{
+			session.beginTransaction();
+			
+			InstructorDetail instructorDetail = session.get(InstructorDetail.class, 3);
+			
 			System.out.println(instructorDetail.getInstructor());
+			
+			//commit Transaction
+			session.getTransaction().commit();	
+		}
+		// Always close the session (session.close), factory.close() won't close the session ( if finally is used )
+		// , As to prevent leaks. And keep application running ! 
 		
-		//commit Transaction
-		session.getTransaction().commit();
 	}
 
 }
